@@ -1,42 +1,86 @@
-(function($){
+(function($, window, document, undefined){
 
     function Tagger(el, settings) {
-        var $el, $ul, $li, $input, $parent, tagTpl;
-
-        tagTpl      = '<li class="tagger-item-label">'+settings.tagTpl+'</li>';
+        var _this = this,
+            _tags = [],
+            $el, $ul, $li, $input, $parent,
+            tagTpl, placeholder, autocomplete, _id, _type;
 
         $el         = $(el);
 
-        $ul         = $('<ul id="tagger-'+$el.attr('id')+'" class="tagger"><li class="tagger-item-input"></li></ul>');
-        $li         = $ul.find('.tagger-item-input');
+        _id         = $el.attr('id');
+        _type       = $(el).attr('type') || 'text';
 
-        $parent     = $el.parent();
-        $input      = $el.detach();
+        tagTpl      = '<li class="tagger-item-label">'+settings.tagTpl+'</li>';
+        itemTpl     = '<li class="tagger-item-label">'+settings.itemTpl+'</li>';
 
-        $li.append($input);
+        $el.attr('type', 'hidden');
 
-        $input.on('keypress', function(e) {
-            if(e.which === 13) {
-                $li.before($(tagTpl.replace('{{ title }}', 'Test')));
+        placeholder = {
+            $ul: $('<ul id="tagger-'+_id+'" class="tagger"><li class="tagger-item-input"><input type="text" placeholder="'+$el.attr('placeholder')+'"></li></ul>')
+        };
+
+        placeholder.$liInput = placeholder.$ul.find('.tagger-item-input');
+        placeholder.$input = placeholder.$ul.find('.tagger-item-input :text');
+
+
+        autocomplete = {
+            $ul: $('<ul id="tagger-list-'+_id+'" class="tagger-list"></ul>'),
+            $li: $('<li class="tagger-list-item">{{ title }}</li>')
+        };
+
+        placeholder.$input.on('keypress', function(e) {
+            var val = placeholder.$input.val().trim();
+
+            if((e.which === 13 || e.which === 44) && val) {
+                _this.add(val);
+                placeholder.$input.val('');
+
+                e.preventDefault();
             }
         });
 
-        $parent.append($ul);
+        $el.after(placeholder.$ul);
 
         var _list = function() {
-
+            //autocomplete
         };
 
-        this.add = function() {
-
+        var _updateVal = function() {
+            $el.val(_tags.join(', '));
         };
 
-        this.remove = function() {
+        this.add = function(val) {
+            var $tag;
 
+            if (val && _tags.indexOf(val) === -1) {
+                _tags.push(val);
+
+                $tag = $(tagTpl.replace('{{ title }}', val))
+                    .attr('tagger-val', val)
+                    .on('click', '.tagger-item-label-close', function(e){
+                        _this.remove($(this).parents('[tagger-val]').attr('tagger-val'));
+                    });
+
+                placeholder.$liInput.before($tag);
+                _updateVal();
+            }
+        };
+
+        this.remove = function(val) {
+            var index;
+
+            if ((index = _tags.indexOf(val)) !== -1) {
+                placeholder.$ul.find('[tagger-val="'+val+'"]').remove();
+                _tags.splice(index, 1);
+                _updateVal();
+            }
         };
 
         this.destroy = function() {
-
+            console.log(_type);
+            $el.attr('type', _type);
+            $('#tagger-'+_id).remove();
         };
     }
 
@@ -48,28 +92,32 @@
     $.fn.tagger = function(params) {
         params = params || {};
 
-        // add
-        // remove
-        // destroy
-        // _list
-
         if (typeof params === 'object') {
             var defaults = {
                 tags:       [], // or function
                 minDigits:  3,
                 maxTags:    false,
-                tagTpl      = '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>';
+                onlyInList: false,
+                tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>',
+                itemTpl:     '{{ title }}'
             };
 
             var settings = $.extend(defaults, params);
 
             return $(this).each(function(){
-
+                if ($(this).data('tagger') === undefined) {
+                    $(this).data('tagger', new Tagger(this, settings));
+                }
             });
         } else {
-            return $(this).each(function(){
+            var instance;
 
+            return $(this).each(function(){
+                if ($(this).data('tagger') !== undefined) {
+                    instance = $(this).data('tagger');
+                    instance[params](arguments[1]);
+                }
             });
         }
     };
-})(jQuery);
+})(jQuery, window, document);
