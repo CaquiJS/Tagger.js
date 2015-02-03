@@ -111,11 +111,12 @@
             });
         } else {
             var instance;
+            var param = arguments[1];
 
             return $(this).each(function(){
                 if ($(this).data('tagger') !== undefined) {
                     instance = $(this).data('tagger');
-                    instance[params](arguments[1]);
+                    instance[params](param);
                 }
             });
         }
