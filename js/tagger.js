@@ -2,7 +2,7 @@
     // TODO: show/hide autocomplete, remote interface for get tags
     // Events, add, remove, maxTags, hasAutocomplete
 
-    function normalize(str) {
+    var normalize = function (str) {
         var w,
             map = {
                 a: /[\xE0-\xE6]/g,
@@ -19,7 +19,7 @@
         }
 
         return str.toLowerCase();
-    }
+    };
 
     function Tagger(el, settings) {
         var _this = this,
