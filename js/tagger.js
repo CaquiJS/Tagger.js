@@ -2,6 +2,25 @@
     // TODO: show/hide autocomplete, remote interface for get tags
     // Events, add, remove, maxTags, hasAutocomplete
 
+    function normalize(str) {
+        var w,
+            map = {
+                a: /[\xE0-\xE6]/g,
+                e: /[\xE8-\xEB]/g,
+                i: /[\xEC-\xEF]/g,
+                o: /[\xF2-\xF6]/g,
+                u: /[\xF9-\xFC]/g,
+                c: /\xE7/g,
+                n: /\xF1/g
+            };
+
+        for (w in map) {
+            str = str.replace(map[w], w);
+        }
+
+        return str.toLowerCase();
+    }
+
     function Tagger(el, settings) {
         var _this = this,
             _tags = [],
@@ -24,7 +43,8 @@
 
         $el.attr('type', 'hidden');
 
-        $autocomplete.appendTo($liInput);
+        // Deixar no body e posicionar na tela
+        $liInput.append($autocomplete);
 
         $input
             .on('keyup', function(e) {
@@ -44,26 +64,41 @@
                 }
             });
 
+        $(document).on('click', function(e){
+            if (!$(e.target).closest($autocomplete).length) {
+                $autocomplete.hide();
+            }
+        });
+
         $el.after($placeholder);
 
         var _list = function(val) {
-            var tags = settings.tags.filter(function(v){ return v.indexOf(val) !== -1; }),
-                $item,
-                tag, i, l;
+            var make = function(list){
+                var tags = list.filter(function(v){ return _tags.indexOf(v) === -1 && normalize(v).indexOf(normalize(val)) !== -1; }),
+                    $item,
+                    tag, i, l;
 
-            $autocomplete.empty();
+                $autocomplete.empty();
 
-            for (i = 0, l = tags.length; i < l; i++) {
-                tag = tags[i];
+                for (i = 0, l = tags.length; i < l; i++) {
+                    tag = tags[i];
 
-                $item = $(_itemTpl.replace('{{ title }}', tag))
-                    .attr('tagger-val', tag)
-                    .on('click', function(e) {
-                        _this.remove($(this).parents('[tagger-val]').attr('tagger-val'));
-                    });
+                    $item = $(_itemTpl.replace('{{ title }}', tag))
+                        .attr('tagger-val', tag)
+                        .on('click', function(e) {
+                            if (_this.add($(this).attr('tagger-val'))) {
+                                $input.val('');
+                                $autocomplete.hide();
+                            }
+                        });
 
-                $autocomplete.append($item);
-            }
+                    $autocomplete.append($item);
+                }
+
+                $autocomplete.show();
+            };
+
+            $.isFunction(settings.tags) ? settings.tags(make) : make(settings.tags);
         };
 
         var _updateVal = function() {
