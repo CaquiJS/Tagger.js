@@ -165,16 +165,17 @@
             return $(this).each(function(){
                 if ($(this).data('tagger') === undefined) {
                     $(this).data('tagger', new Tagger(this, settings));
+                } else {
+                    $(this).data('tagger').destroy();
+                    $(this).data('tagger', new Tagger(this, settings));
                 }
             });
         } else {
-            var instance;
             var param = arguments[1];
 
             return $(this).each(function(){
                 if ($(this).data('tagger') !== undefined) {
-                    instance = $(this).data('tagger');
-                    instance[params](param);
+                    $(this).data('tagger')[params](param);
                 }
             });
         }
