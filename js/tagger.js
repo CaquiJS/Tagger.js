@@ -35,8 +35,6 @@
             .on('keydown', function(e) {
                 var val = $input.val().trim();
 
-                console.log(e.which, e.keyCode, keyboardMap[e.which]);
-
                 if((e.which === 9 || e.which === 13 || e.which === 188) && val) {
                     if (_this.add(val)) {
                         $input.val('');
