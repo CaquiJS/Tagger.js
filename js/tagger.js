@@ -100,7 +100,7 @@
                     $item = $(_itemTpl.replace('{{ title }}', tag))
                         .attr('tagger-val', tag)
                         .on('mouseenter', function(e) {
-                            $suggestion.val($(this).attr('tagger-val'));
+                            _updateSuggestion($(this).attr('tagger-val'));
                         })
                         .on('click', function(e) {
                             if (_this.add($(this).attr('tagger-val'))) {
@@ -115,7 +115,7 @@
                 offset = $input.offset();
 
                 $autocomplete.css({left: offset.left, top: offset.top + $input.height()})
-                $suggestion.val(tags[0]);
+                _updateSuggestion(tags[0]);
                 $autocomplete.show();
             } else {
                 _hideAutoComplete();
@@ -125,6 +125,11 @@
         var _hideAutoComplete = function(){
             $suggestion.val('');
             $autocomplete.hide();
+        };
+
+        var _updateSuggestion = function(suggestion) {
+            var val = $input.val();
+            $suggestion.val(val+suggestion.substr(val.length));
         };
 
         var _updateVal = function() {
