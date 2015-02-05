@@ -21,6 +21,24 @@
         return str.toLowerCase();
     };
 
+    var createSelection = function (field, start, end) {
+        if( field.createTextRange ) {
+            var selRange = field.createTextRange();
+            selRange.collapse(true);
+            selRange.moveStart('character', start);
+            selRange.moveEnd('character', end);
+            selRange.select();
+            field.focus();
+        } else if( field.setSelectionRange ) {
+            field.focus();
+            field.setSelectionRange(start, end);
+        } else if( typeof field.selectionStart != 'undefined' ) {
+            field.selectionStart = start;
+            field.selectionEnd = end;
+            field.focus();
+        }
+    };
+
     function Tagger(el, settings) {
         var _this = this,
             _tags = [],
@@ -79,7 +97,16 @@
 
         var _list = function(val) {
             var filter = function(list){
-                var tags = list.filter(function(v){ return _tags.indexOf(v) === -1 && normalize(v).indexOf(normalize(val)) !== -1; }).sort();
+                var score;
+                var tags = list
+                            .filter(function(item){ return _tags.indexOf(item.value) === -1 && normalize(item.value).indexOf(normalize(val)) !== -1; })
+                            .sort(function(a, b){
+                                score = -1;
+                                score += (b.value.indexOf(val) === 0) ? 2 : 0;
+                                score += (b.value > a.value) ? 1 : (b.value < a.value ? 0 : 1);
+
+                                return score;
+                            });
 
                 _showAutoComplete(tags);
             };
@@ -95,7 +122,7 @@
 
             if (tags.length) {
                 for (i = 0, l = tags.length; i < l; i++) {
-                    tag = tags[i];
+                    tag = tags[i].value;
 
                     $item = $(_itemTpl.replace('{{ title }}', tag))
                         .attr('tagger-val', tag)
@@ -114,8 +141,10 @@
 
                 offset = $input.offset();
 
-                $autocomplete.css({left: offset.left, top: offset.top + $input.height()})
-                _updateSuggestion(tags[0]);
+                $autocomplete.css({left: offset.left, top: offset.top + $input.height()});
+
+                _updateSuggestion(tags[0].value);
+
                 $autocomplete.show();
             } else {
                 _hideAutoComplete();
@@ -129,7 +158,7 @@
 
         var _updateSuggestion = function(suggestion) {
             var val = $input.val();
-            $suggestion.val(val+suggestion.substr(val.length));
+            $suggestion.val(suggestion.indexOf(val) === 0 ? val+suggestion.substr(val.length) : '');
         };
 
         var _updateVal = function() {
