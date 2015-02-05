@@ -32,32 +32,37 @@
         _id         = $el.attr('id');
         _type       = $(el).attr('type') || 'text';
 
-        _tagTpl     = '<li class="tagger-item-label">'+settings.tagTpl+'</li>';
-        _itemTpl    = '<li class="tagger-item-item">'+settings.itemTpl+'</li>';
+        _tagTpl     = '<li class="tagger-tag">'+settings.tagTpl+'</li>';
+        _itemTpl    = '<li class="tagger-list-item">'+settings.itemTpl+'</li>';
 
         $autocomplete   = $('<ul id="tagger-list-'+_id+'" class="tagger-list"></ul>');
-        $placeholder    = $('<ul id="tagger-'+_id+'" class="tagger"><li class="tagger-item-input"><input type="text" placeholder="'+$el.attr('placeholder')+'"></li></ul>');
+        $placeholder    = $('<ul id="tagger-'+_id+'" class="tagger"><li class="tagger-tag-input"><input type="text" class="tagger-tag-input-suggestion" autocomplete="off" spellcheck="false" readonly /><input type="text" class="tagger-tag-input-value" placeholder="'+$el.attr('placeholder')+'" autocomplete="off" spellcheck="false" /></li></ul>');
 
-        $liInput    = $placeholder.find('.tagger-item-input');
-        $input      = $liInput.find(':text');
+        $liInput    = $placeholder.find('.tagger-tag-input');
+        $suggestion = $liInput.find('.tagger-tag-input-suggestion');
+        $input      = $liInput.find('.tagger-tag-input-value');
 
         $el.attr('type', 'hidden');
 
         // Deixar no body e posicionar na tela
-        $liInput.append($autocomplete);
+        $('body').append($autocomplete);
 
         $input
             .on('keyup', function(e) {
                 var val = $input.val().trim();
-
-                _list(val);
+                if (val && val.length >= settings.minDigits) {
+                    _list(val);
+                } else {
+                    _hideAutoComplete();
+                }
             })
             .on('keydown', function(e) {
-                var val = $input.val().trim();
+                var val = (settings.onlyInList ? $suggestion.val() : $input.val()).trim();
 
                 if((e.which === 9 || e.which === 13 || e.which === 188) && val) {
                     if (_this.add(val)) {
                         $input.val('');
+                        _hideAutoComplete();
                     }
 
                     e.preventDefault();
@@ -66,39 +71,60 @@
 
         $(document).on('click', function(e){
             if (!$(e.target).closest($autocomplete).length) {
-                $autocomplete.hide();
+                _hideAutoComplete();
             }
         });
 
         $el.after($placeholder);
 
         var _list = function(val) {
-            var make = function(list){
-                var tags = list.filter(function(v){ return _tags.indexOf(v) === -1 && normalize(v).indexOf(normalize(val)) !== -1; }),
-                    $item,
-                    tag, i, l;
+            var filter = function(list){
+                var tags = list.filter(function(v){ return _tags.indexOf(v) === -1 && normalize(v).indexOf(normalize(val)) !== -1; }).sort();
 
-                $autocomplete.empty();
+                _showAutoComplete(tags);
+            };
 
+            $.isFunction(settings.tags) ? settings.tags(filter) : filter(settings.tags);
+        };
+
+        var _showAutoComplete = function(tags){
+            var $item,
+                tag, offset, i, l;
+
+            $autocomplete.empty();
+
+            if (tags.length) {
                 for (i = 0, l = tags.length; i < l; i++) {
                     tag = tags[i];
 
                     $item = $(_itemTpl.replace('{{ title }}', tag))
                         .attr('tagger-val', tag)
+                        .on('mouseenter', function(e) {
+                            $suggestion.val($(this).attr('tagger-val'));
+                        })
                         .on('click', function(e) {
                             if (_this.add($(this).attr('tagger-val'))) {
                                 $input.val('');
-                                $autocomplete.hide();
+                                _hideAutoComplete();
                             }
                         });
 
                     $autocomplete.append($item);
                 }
 
-                $autocomplete.show();
-            };
+                offset = $input.offset();
 
-            $.isFunction(settings.tags) ? settings.tags(make) : make(settings.tags);
+                $autocomplete.css({left: offset.left, top: offset.top + $input.height()})
+                $suggestion.val(tags[0]);
+                $autocomplete.show();
+            } else {
+                _hideAutoComplete();
+            }
+        };
+
+        var _hideAutoComplete = function(){
+            $suggestion.val('');
+            $autocomplete.hide();
         };
 
         var _updateVal = function() {
@@ -113,7 +139,7 @@
 
                 $tag = $(_tagTpl.replace('{{ title }}', val))
                     .attr('tagger-val', val)
-                    .on('click', '.tagger-item-label-close', function(e){
+                    .on('click', '.tagger-tag-remove', function(e){
                         _this.remove($(this).parents('[tagger-val]').attr('tagger-val'));
                     });
 
@@ -157,7 +183,7 @@
                 maxTags:    false,
                 onlyInList: false,
                 tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>',
-                itemTpl:     '{{ title }}'
+                itemTpl:    '{{ title }}'
             };
 
             var settings = $.extend(defaults, params);

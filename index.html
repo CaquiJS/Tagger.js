@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Tagger</title>
+    <link rel="stylesheet/less" type="text/css" href="less/tagger.less" />
 </head>
 <body>
     <input type="text" name="tags" id="tags" placeholder="Digite uma tag" />
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.3.1/less.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="js/tagger.js"></script>
     <script>
         var tags = ['Teste', 'Tagger', 'Plugin', 'Funciona'];
         $('#tags').tagger({
             tags:       tags, // or function
-            minDigits:  3,
+            minDigits:  0,
             maxTags:    false, // or number
-            onlyInList: false,
-            tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>',
+            onlyInList: true,
+            tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-tag-remove">X</button>',
             itemTpl:     '{{ title }}'
         });
     </script>

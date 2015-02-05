@@ -1,0 +1,68 @@
+
+body {
+    font-family: Arial;
+}
+
+#clearfix {
+    *zoom: 1;
+
+    &:before,
+    &:after {
+        content: " "; /* 1 */
+        display: table; /* 2 */
+    }
+
+    &:after {
+        clear: both;
+    }
+}
+
+.tagger-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .tagger-list-item {
+
+    }
+}
+
+.tagger {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    clear: both;
+
+    #clearfix;
+
+    .tagger-tag {
+        float: left;
+
+        .tagger-tag-remove {
+
+        }
+    }
+
+    .tagger-tag-input {
+        position: relative;
+        float: left;
+
+        input {
+            position: relative;
+            z-index: 1;
+            border: solid 0;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .tagger-tag-input-suggestion {
+            position: absolute;
+            z-index: 0;
+            color: #CCC;
+        }
+
+        .tagger-tag-input-value {}
+    }
+}
