@@ -13,14 +13,17 @@
     <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="js/tagger.js"></script>
     <script>
-        var tags = ['este', 'Teste', 'Outro Teste', 'Tagger', 'Plugin', 'Funciona'].map(function(v){ return {value: v}; });
+        var i = 0;
+        var tags = ['este', 'Teste', 'Outro Teste', 'Tagger', 'Plugin', 'Funciona'].map(function(v){ return {description: 'Lorem ipsum dolor sit.', value: v}; });
+        var to;
+
         $('#tags').tagger({
-            tags:       tags, // or function
-            minDigits:  0,
+            tags:       function(val, onComplete){ clearTimeout(to); to = setTimeout(function(){ onComplete(tags); }, 1000); }, // or function
+            minDigits:  2,
             maxTags:    false, // or number
             onlyInList: true,
-            tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-tag-remove">X</button>',
-            itemTpl:     '{{ title }}'
+            tagTpl:     '<span class="tagger-item-label-text">{{ value }}</span><button class="tagger-tag-remove">X</button>',
+            itemTpl:    '<span>{{ value }}</span><small>{{ description }}</small>'
         });
     </script>
 </body>

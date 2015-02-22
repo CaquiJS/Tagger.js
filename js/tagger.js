@@ -1,6 +1,6 @@
 (function($, window, document, undefined) {
-    // TODO: show/hide autocomplete, remote interface for get tags
-    // Events, add, remove, maxTags, hasAutocomplete
+    // TODO: remote interface for get tags
+    // Events: add, remove, maxTags, hasAutocomplete, error
 
     var normalize = function (str) {
         var w,
@@ -24,8 +24,8 @@
     function Tagger(el, settings) {
         var _this = this,
             _tags = [],
-            $el, $autocomplete, $placeholder, $liInput, $input,
-            _autocomplete, _id, _type, _tagTpl, _itemTpl;
+            _autocomplete, _id, _type, _tagTpl, _itemTpl,
+            $el, $autocomplete, $placeholder, $liInput, $input;
 
         $el         = $(el);
 
@@ -97,21 +97,27 @@
                 _showAutoComplete(tags);
             };
 
-            $.isFunction(settings.tags) ? settings.tags(filter) : filter(settings.tags);
+            $.isFunction(settings.tags) ? settings.tags(val, filter) : filter(settings.tags);
         };
 
         var _showAutoComplete = function(tags){
             var $item,
-                tag, offset, i, l;
+                parsed, tag, value, offset, i, k, l;
 
             $autocomplete.empty();
 
             if (tags.length) {
                 for (i = 0, l = tags.length; i < l; i++) {
-                    tag = tags[i].value;
+                    tag = tags[i];
+                    val = tag.value;
 
-                    $item = $(_itemTpl.replace('{{ title }}', tag))
-                        .attr('tagger-val', tag)
+                    parsed = _itemTpl;
+                    for (k in tag) {
+                        parsed = parsed.replace('{{ '+k+' }}', tag[k]);
+                    }
+
+                    $item = $(parsed)
+                        .attr('tagger-val', val)
                         .on('mouseenter', function(e) {
                             _updateSuggestion($(this).attr('tagger-val'));
                         })
@@ -157,7 +163,7 @@
             if (val && (settings.maxTags === false || settings.maxTags >= _tags.length) && _tags.indexOf(val) === -1) {
                 _tags.push(val);
 
-                $tag = $(_tagTpl.replace('{{ title }}', val))
+                $tag = $(_tagTpl.replace('{{ value }}', val))
                     .attr('tagger-val', val)
                     .on('click', '.tagger-tag-remove', function(e){
                         _this.remove($(this).parents('[tagger-val]').attr('tagger-val'));
@@ -203,8 +209,8 @@
                 maxTags:    false,
                 onlyInList: false,
                 theme:      'tagger-default-theme',
-                tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>',
-                itemTpl:    '{{ title }}'
+                tagTpl:     '<span class="tagger-item-label-text">{{ value }}</span><button class="tagger-tag-remove">X</button>',
+                itemTpl:    '{{ value }}'
             };
 
             var settings = $.extend(defaults, params);

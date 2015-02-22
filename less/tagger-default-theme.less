@@ -1,19 +1,30 @@
-@input-font-size: 14px;
+@input-font-size: 13px;
 @input-padding: 5px;
 
 .tagger-default-theme.tagger-list {
+    font-size: @input-font-size;
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 1px 0 0 0;
     position: absolute;
     border: 1px solid #CCC;
 
     .tagger-list-item {
-        padding: 10px 5px;
+        padding: 5px 10px;
         border-top: 1px solid #CDCDCD;
 
         &:first-child {
             border-top: 0px solid;
+        }
+
+        span {
+            display: block;
+        }
+
+        small {
+            display: block;
+            color: #999;
+            font-size: 12px;
         }
     }
 }
