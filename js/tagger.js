@@ -21,29 +21,11 @@
         return str.toLowerCase();
     };
 
-    var createSelection = function (field, start, end) {
-        if( field.createTextRange ) {
-            var selRange = field.createTextRange();
-            selRange.collapse(true);
-            selRange.moveStart('character', start);
-            selRange.moveEnd('character', end);
-            selRange.select();
-            field.focus();
-        } else if( field.setSelectionRange ) {
-            field.focus();
-            field.setSelectionRange(start, end);
-        } else if( typeof field.selectionStart != 'undefined' ) {
-            field.selectionStart = start;
-            field.selectionEnd = end;
-            field.focus();
-        }
-    };
-
     function Tagger(el, settings) {
         var _this = this,
             _tags = [],
             $el, $autocomplete, $placeholder, $liInput, $input,
-            placeholder, autocomplete, _id, _type, _tagTpl, _itemTpl;
+            _autocomplete, _id, _type, _tagTpl, _itemTpl;
 
         $el         = $(el);
 
@@ -53,8 +35,8 @@
         _tagTpl     = '<li class="tagger-tag">'+settings.tagTpl+'</li>';
         _itemTpl    = '<li class="tagger-list-item">'+settings.itemTpl+'</li>';
 
-        $autocomplete   = $('<ul id="tagger-list-'+_id+'" class="tagger-list"></ul>');
-        $placeholder    = $('<ul id="tagger-'+_id+'" class="tagger"><li class="tagger-tag-input"><input type="text" class="tagger-tag-input-suggestion" autocomplete="off" spellcheck="false" readonly /><input type="text" class="tagger-tag-input-value" placeholder="'+$el.attr('placeholder')+'" autocomplete="off" spellcheck="false" /></li></ul>');
+        $autocomplete   = $('<ul id="tagger-list-'+_id+'" class="'+settings.theme+' tagger-list"></ul>');
+        $placeholder    = $('<ul id="tagger-'+_id+'" class="'+settings.theme+' tagger"><li class="tagger-tag-input"><input type="text" class="tagger-tag-input-suggestion" autocomplete="off" spellcheck="false" readonly /><input type="text" class="tagger-tag-input-value" placeholder="'+$el.attr('placeholder')+'" autocomplete="off" spellcheck="false" /></li></ul>');
 
         $liInput    = $placeholder.find('.tagger-tag-input');
         $suggestion = $liInput.find('.tagger-tag-input-suggestion');
@@ -87,6 +69,10 @@
                 }
             });
 
+        $autocomplete.on('mouseleave', function(e){
+            //_updateSuggestion($autocomplete.find('.tagger-list-item:eq(0)').attr('tagger-val'));
+        });
+
         $(document).on('click', function(e){
             if (!$(e.target).closest($autocomplete).length) {
                 _hideAutoComplete();
@@ -99,7 +85,7 @@
             var filter = function(list){
                 var score;
                 var tags = list
-                            .filter(function(item){ return _tags.indexOf(item.value) === -1 && normalize(item.value).indexOf(normalize(val)) !== -1; })
+                            .filter(function(item){ return _tags.filter(function(tag){ return normalize(tag) === normalize(item.value) }).length === 0 && normalize(item.value).indexOf(normalize(val)) !== -1; })
                             .sort(function(a, b){
                                 score = -1;
                                 score += (b.value.indexOf(val) === 0) ? 2 : 0;
@@ -141,7 +127,7 @@
 
                 offset = $input.offset();
 
-                $autocomplete.css({left: offset.left, top: offset.top + $input.height()});
+                $autocomplete.css({left: offset.left, top: offset.top + $input.innerHeight()});
 
                 _updateSuggestion(tags[0].value);
 
@@ -158,7 +144,7 @@
 
         var _updateSuggestion = function(suggestion) {
             var val = $input.val();
-            $suggestion.val(suggestion.indexOf(val) === 0 ? val+suggestion.substr(val.length) : '');
+            $suggestion.val(suggestion.toLowerCase().indexOf(val.toLowerCase()) === 0 ? val+suggestion.substr(val.length) : '');
         };
 
         var _updateVal = function() {
@@ -216,6 +202,7 @@
                 minDigits:  3,
                 maxTags:    false,
                 onlyInList: false,
+                theme:      'tagger-default-theme',
                 tagTpl:     '<span class="tagger-item-label-text">{{ title }}</span><button class="tagger-item-label-close">X</button>',
                 itemTpl:    '{{ title }}'
             };

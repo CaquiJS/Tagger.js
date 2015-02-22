@@ -1,0 +1,73 @@
+@input-font-size: 14px;
+@input-padding: 5px;
+
+.tagger-default-theme.tagger-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    border: 1px solid #CCC;
+
+    .tagger-list-item {
+        padding: 10px 5px;
+        border-top: 1px solid #CDCDCD;
+
+        &:first-child {
+            border-top: 0px solid;
+        }
+    }
+}
+
+.tagger-default-theme.tagger {
+    font-size: @input-font-size;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    clear: both;
+
+    .tagger-tag {
+        float: left;
+        background: #EFEFEF;
+        border: 1px solid #CCC;
+        position: relative;
+        margin-right: 5px;
+
+        .tagger-item-label-text {
+            padding: @input-padding;
+            display: inline-block;
+        }
+
+        .tagger-tag-remove {
+            padding: @input-padding;
+            font-size: @input-font-size;
+            background: none;
+            border: 0px solid;
+            border-left: 1px solid #CCC;
+            cursor: pointer;
+        }
+    }
+
+    .tagger-tag-input {
+        position: relative;
+        float: left;
+
+        input {
+            font-size: @input-font-size;
+            padding: @input-padding;
+            position: relative;
+            z-index: 1;
+            border: solid 1px transparent;
+            background: transparent;
+            margin: 0;
+            outline: 0px solid;
+        }
+
+        .tagger-tag-input-suggestion {
+            position: absolute;
+            z-index: 0;
+            color: #CCC;
+        }
+
+        .tagger-tag-input-value {}
+    }
+}
