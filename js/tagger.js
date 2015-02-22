@@ -87,9 +87,9 @@
                 var tags = list
                             .filter(function(item){ return _tags.filter(function(tag){ return normalize(tag) === normalize(item.value) }).length === 0 && normalize(item.value).indexOf(normalize(val)) !== -1; })
                             .sort(function(a, b){
-                                score = -1;
-                                score += (b.value.indexOf(val) === 0) ? 2 : 0;
-                                score += (b.value > a.value) ? 1 : (b.value < a.value ? 0 : 1);
+                                score = 0;
+                                score += (normalize(b.value).indexOf(normalize(val)) === 0) ? 2 : 0;
+                                score += (b.value > a.value) ? 1 : (b.value < a.value ? -1 : 0);
 
                                 return score;
                             });
